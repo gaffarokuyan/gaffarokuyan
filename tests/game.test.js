@@ -140,3 +140,23 @@ test('her günlük mesajı iki dilde de yazılabiliyor', async () => {
   }
   assert.ok(seen.size >= 8, [...seen].join(','));
 });
+
+test('ortalama alış maliyeti alım, satış ve pusuda doğru izlenir', () => {
+  const s = atMarket(0);
+  s.gold = 10000;
+  const a = G.price(s, 0, 'ipek'); G.buy(s, 'ipek');
+  const b = G.price(s, 0, 'ipek'); G.buy(s, 'ipek');
+  assert.equal(G.avgCost(s, 'ipek'), Math.round((a + b) / 2));
+  G.sell(s, 'ipek');
+  assert.equal(G.avgCost(s, 'ipek'), Math.round((a + b) / 2));
+  assert.ok(G.sellAll(s, 'ipek'));
+  assert.equal(s.cargo.ipek, 0);
+  assert.ok(Math.abs(s.costs.ipek) < 1e-9);
+  assert.equal(G.avgCost(s, 'ipek'), 0);
+});
+
+test('iki dilde de aynı arayüz metinleri var', async () => {
+  const { DICT } = await import('../src/i18n.js');
+  assert.deepEqual(Object.keys(DICT.tr.ui).sort(), Object.keys(DICT.en.ui).sort());
+  assert.equal(DICT.tr.ui.tutorial.length, DICT.en.ui.tutorial.length);
+});

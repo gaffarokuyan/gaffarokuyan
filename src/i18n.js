@@ -1,3 +1,10 @@
+// Aynı maldan birden çok kalemi "2 ipek" gibi tek ifadede toplar.
+function tally(goods, d) {
+  const n = {};
+  for (const g of goods) n[g] = (n[g] || 0) + 1;
+  return Object.entries(n).map(([g, k]) => `${k} ${d.goodsLower[g]}`);
+}
+
 // Oyundaki tüm metinler. Kurallar (game.js) yalnızca kimlik ve sayı üretir; metne burada çevrilir.
 const tr = {
   cities: ['Şian', 'Kaşgar', 'Semerkant', 'Buhara', 'Tebriz', 'İstanbul'],
@@ -39,7 +46,23 @@ const tr = {
     nextColor: 'Sıradaki renk', best: (n) => `En iyi çözüm mekikte en çok ${n} iplik bekletir.`,
     starsAria: (n) => `${n} yıldız`, loomWon: (m) => `Kilim tamam. Bir sonraki pazarda satışların ×${m}.`,
     loomLost: 'Mekik doldu. Bu kilim yarım kaldı.',
-    switchTo: 'English', switchAria: 'Switch to English',
+    tabRoute: 'Yol', tabInn: 'Han', tabLogShort: 'Günlük', help: 'Nasıl oynanır',
+    ahead: 'Önündeki yol', cargoEmpty: 'Kervan boş. Bir şehirde ucuz mal al.',
+    goals: 'Hedefler', trip: (n) => `${n}. sefer`,
+    holding: (n, avg) => `Sende ${n} · ort. alış ${avg}`, sellAll: (n) => `Hepsini sat (${n})`,
+    marketSub: 'Ucuza al, yolun ilerisinde pahalıya sat.',
+    loomHow: 'Bir sütuna dokun. Üstteki makara istenen renkse dokunur, değilse mekikte bekler.',
+    newMotif: 'Yeni motif', floorOf: (n, m) => `${m} kattan ${n}.`, nextFloor: 'Sonraki kat',
+    perkCargo: 'yük kapasitesi', perkIncome: 'altın her seferde', needGold: (n) => `${n} altın daha gerek`,
+    confirmReset: 'Emin misin? Tekrar dokun.', tripsStat: 'Sefer', incomeStat: 'Sefer geliri', capStat: 'Kapasite',
+    albumDone: (n, m) => `${m} motiften ${n} tanesi dokundu`, logEmpty: 'Henüz bir şey olmadı.',
+    next: 'İleri', start: 'Başla', skip: 'Geç', stepOf: (i, n) => `${i} / ${n}`,
+    tutorial: [
+      ['die', 'Zar at, yola çık', 'Zar kervanını 1–6 durak ilerletir. "Önündeki yol" şeridi hangi sayının seni nereye götüreceğini gösterir.'],
+      ['city', 'Ucuza al, pahalıya sat', "Her şehrin fiyatı farklı. Şian'da ipek ucuz, İstanbul'da pahalı. Satış fiyatın yeşilse kâr ediyorsun."],
+      ['loom', 'Doku, kazancını katla', 'Tezgâhta renkleri sırayla doku. Ne kadar az iplik bekletirsen o kadar çok yıldız; yıldızlar bir sonraki pazarda satışlarını ×2\'ye kadar artırır.'],
+      ['inn', 'Hanını büyüt', 'Kazancınla hanına kat çık ve pusulara karşı muhafız tut. Hedef: 5. kat ve 6 motifin hepsi.'],
+    ],
   },
   log: {
     start: () => "Kervanın Şian'da hazır. Ucuza al, yolun ilerisinde pahalıya sat.",
@@ -50,7 +73,7 @@ const tr = {
     road: ({ g }) => `Yolda bir tüccara rehberlik ettin. ${g} altın.`,
     guarded: ({ bot }, d) => `${d.bots[bot]} pusu kurdu ama muhafızın püskürttü.`,
     robbedGold: ({ bot, lost }, d) => `${d.bots[bot]} pusu kurdu. Yükün yoktu, ${lost} altın kaptırdın.`,
-    robbedGoods: ({ bot, goods }, d) => `${d.bots[bot]} pusu kurdu. ${goods.map((g) => d.goodsLower[g]).join(' ve ')} kaptırdın. Handan muhafız tutabilirsin.`,
+    robbedGoods: ({ bot, goods }, d) => `${d.bots[bot]} pusu kurdu. ${tally(goods, d).join(' ve ')} kaptırdın. Handan muhafız tutabilirsin.`,
     loomFail: () => 'Mekik doldu, kilim yarım kaldı.',
     loomWin: ({ n, mult, motif, album }, d) => `Kilimi ${n} yıldızla dokudun. Bir sonraki pazarda satışların ×${mult}.`
       + (motif ? ` Albüme ${d.motifs[motif][0]} motifi eklendi.` : '')
@@ -100,7 +123,23 @@ const en = {
     nextColor: 'Next color', best: (n) => `The best solution holds at most ${n} thread${n === 1 ? '' : 's'} in the shuttle.`,
     starsAria: (n) => `${n} star${n === 1 ? '' : 's'}`, loomWon: (m) => `Rug finished. Your sales at the next market are ×${m}.`,
     loomLost: 'The shuttle filled up. This rug is unfinished.',
-    switchTo: 'Türkçe', switchAria: 'Türkçeye geç',
+    tabRoute: 'Route', tabInn: 'Inn', tabLogShort: 'Log', help: 'How to play',
+    ahead: 'Road ahead', cargoEmpty: 'Your caravan is empty. Buy cheap goods in a city.',
+    goals: 'Goals', trip: (n) => `Trip ${n}`,
+    holding: (n, avg) => `You have ${n} · paid ${avg} avg`, sellAll: (n) => `Sell all (${n})`,
+    marketSub: 'Buy cheap here, sell dear down the road.',
+    loomHow: 'Tap a column. If its top spool is the color needed it gets woven; otherwise it waits in the shuttle.',
+    newMotif: 'New motif', floorOf: (n, m) => `Floor ${n} of ${m}`, nextFloor: 'Next floor',
+    perkCargo: 'cargo space', perkIncome: 'gold per trip', needGold: (n) => `${n} more gold needed`,
+    confirmReset: 'Sure? Tap again.', tripsStat: 'Trips', incomeStat: 'Per trip', capStat: 'Capacity',
+    albumDone: (n, m) => `${n} of ${m} motifs woven`, logEmpty: 'Nothing has happened yet.',
+    next: 'Next', start: 'Start', skip: 'Skip', stepOf: (i, n) => `${i} of ${n}`,
+    tutorial: [
+      ['die', 'Roll to travel', 'Each roll moves your caravan 1–6 spaces. The road-ahead strip shows where each number takes you.'],
+      ['city', 'Buy cheap, sell dear', "Every city has its own prices. Silk is cheap in Xi'an and dear in Istanbul. A green sell price means profit."],
+      ['loom', 'Weave to multiply', 'At a loom, weave the colors in order. Fewer waiting threads earn more stars, and stars boost your next market sales up to ×2.'],
+      ['inn', 'Grow your caravanserai', 'Spend profits on new floors and hire guards against ambushes. Goal: floor 5 and all 6 motifs.'],
+    ],
   },
   log: {
     start: () => "Your caravan is ready in Xi'an. Buy cheap, sell dear further down the road.",
@@ -111,7 +150,7 @@ const en = {
     road: ({ g }) => `You guided a merchant along the road. ${g} gold.`,
     guarded: ({ bot }, d) => `${d.bots[bot]} set an ambush, but your guard drove them off.`,
     robbedGold: ({ bot, lost }, d) => `${d.bots[bot]} set an ambush. You had no cargo, so you lost ${lost} gold.`,
-    robbedGoods: ({ bot, goods }, d) => `${d.bots[bot]} set an ambush and took your ${goods.map((g) => d.goodsLower[g]).join(' and ')}. You can hire guards at the caravanserai.`,
+    robbedGoods: ({ bot, goods }, d) => `${d.bots[bot]} set an ambush and took ${tally(goods, d).join(' and ')} from you. You can hire guards at the caravanserai.`,
     loomFail: () => 'The shuttle filled up and the rug was left unfinished.',
     loomWin: ({ n, mult, motif, album }, d) => `You wove the rug with ${n} star${n === 1 ? '' : 's'}. Your sales at the next market are ×${mult}.`
       + (motif ? ` ${d.motifs[motif][0]} motif added to your album.` : '')

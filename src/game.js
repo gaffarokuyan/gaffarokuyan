@@ -49,9 +49,10 @@ const good = (id) => GOODS.find((g) => g.id === id);
 
 export function newGame() {
   return {
-    v: 2,
+    v: 3,
     gold: 300, dice: 15, pos: 0, han: 1, guards: 0, mult: 1, laps: 0, lastRoll: 0,
     cargo: { ipek: 0, baharat: 0, cay: 0, kilim: 0 },
+    costs: { ipek: 0, baharat: 0, cay: 0, kilim: 0 }, // taşınan malın toplam alış maliyeti
     album: [],
     stock: CITIES.map(() => ({ ipek: TARGET, baharat: TARGET, cay: TARGET, kilim: TARGET })),
     bots: Array.from({ length: BOT_COUNT }, (_, i) => ({ id: i, city: (i * 2 + 1) % CITIES.length, good: null, qty: 0, paid: 0 })),
@@ -63,6 +64,14 @@ export function newGame() {
 export const capacity = (s) => 6 + 2 * s.han;
 export const load = (s) => Object.values(s.cargo).reduce((a, b) => a + b, 0);
 export const hanCost = (s) => (s.han + 1) ** 2 * 100;
+// Taşınan malın birim başına ortalama alış fiyatı (yoksa 0).
+export const avgCost = (s, id) => (s.cargo[id] ? Math.round(s.costs[id] / s.cargo[id]) : 0);
+
+// Bir mal eksildiğinde maliyet de ortalama oranında düşer.
+function drop(s, id) {
+  s.costs[id] -= s.costs[id] / s.cargo[id];
+  s.cargo[id]--;
+}
 
 // Günlüğe metin değil, mesaj kimliği ve sayılar yazılır; dile i18n.js çevirir.
 function say(s, k, id, p) {
@@ -154,7 +163,7 @@ function ambush(s, rng) {
     const left = GOODS.map((g) => g.id).filter((id) => s.cargo[id] > 0);
     if (!left.length) break;
     const id = left[Math.floor(rng() * left.length)];
-    s.cargo[id]--;
+    drop(s, id);
     taken.push(id);
   }
   say(s, 'kotu', 'robbedGoods', { bot, goods: taken });
@@ -167,6 +176,7 @@ export function buy(s, id) {
   if (s.gold < cost || load(s) >= capacity(s) || s.stock[p.city][id] < 2) return false;
   s.gold -= cost;
   s.cargo[id]++;
+  s.costs[id] += cost;
   s.stock[p.city][id]--;
   p.bought = true;
   s.mult = 1; // Usta çarpanı ilk alımda biter; aynı şehirde al-sat yapılamasın diye.
@@ -177,10 +187,16 @@ export function sell(s, id) {
   const p = s.pending;
   if (!p || p.type !== 'pazar' || s.cargo[id] < 1) return false;
   s.gold += sellPrice(s, p.city, id);
-  s.cargo[id]--;
+  drop(s, id);
   s.stock[p.city][id]++;
   p.sold = true;
   return true;
+}
+
+export function sellAll(s, id) {
+  let n = 0;
+  while (sell(s, id)) n++;
+  return n > 0;
 }
 
 export function leaveMarket(s) {
