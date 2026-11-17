@@ -1,0 +1,15 @@
+{
+  "name": "kervan",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Kervan — İpek Yolu'nda sosyal zar-ticaret oyunu (prototip)",
+  "scripts": {
+    "test": "node --test",
+    "build": "node build.mjs",
+    "dev": "node build.mjs && npx --yes serve dist"
+  },
+  "devDependencies": {
+    "esbuild": "^0.21.5"
+  }
+}
