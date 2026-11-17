@@ -115,3 +115,28 @@ test('han yükseltmesi kapasiteyi artırır ve 5. katta durur', () => {
   while (G.upgradeHan(s));
   assert.equal(s.han, G.MAX_HAN);
 });
+
+test('her günlük mesajı iki dilde de yazılabiliyor', async () => {
+  const { logText, LANGS } = await import('../src/i18n.js');
+  const rng = seeded(11);
+  const s = G.newGame();
+  s.dice = 400; s.gold = 5000;
+  const seen = new Set();
+  for (let i = 0; i < 150; i++) {
+    if (!G.roll(s, rng)) G.newDay(s);
+    if (s.pending?.type === 'pazar') { G.buy(s, 'ipek'); G.leaveMarket(s); }
+    if (s.pending?.type === 'tezgah') {
+      while (s.pending.puzzle.status === 'play') G.loomTap(s, i % 3 ? L.bestMove(s.pending.puzzle) : s.pending.puzzle.cols.findIndex((c) => c.length));
+      G.finishLoom(s);
+    }
+    G.upgradeHan(s);
+    for (const e of s.log) {
+      seen.add(e.id);
+      for (const lang of LANGS) {
+        const text = logText(lang, e);
+        assert.ok(text && !/undefined|NaN/.test(text), `${lang}: ${e.id} -> ${text}`);
+      }
+    }
+  }
+  assert.ok(seen.size >= 8, [...seen].join(','));
+});

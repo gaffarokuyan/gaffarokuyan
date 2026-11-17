@@ -1,17 +1,24 @@
 import * as G from './game.js';
 import { stars } from './loom.js';
+import { DICT, logText } from './i18n.js';
 
-const KEY = 'kervan-v1';
+// Dil tarayıcıdan seçilir: Türkçe tarayıcıda Türkçe, diğerlerinde İngilizce.
+const lang = (navigator.language || '').toLowerCase().startsWith('tr') ? 'tr' : 'en';
+const d = DICT[lang];
+const u = d.ui;
+document.documentElement.lang = lang;
+
+const KEY = 'kervan-v2';
 const rng = Math.random;
 const app = document.getElementById('app');
 let s;
 let tab = 'gunluk';
 
 function restore(data) {
-  if (data && data.v === 1) return data;
+  if (data && data.v === 2) return data;
   try {
     const saved = JSON.parse(localStorage.getItem(KEY));
-    if (saved && saved.v === 1) return saved;
+    if (saved && saved.v === 2) return saved;
   } catch { /* kayıt yoksa yeni oyun */ }
   return G.newGame();
 }
@@ -19,9 +26,9 @@ function save() {
   try { localStorage.setItem(KEY, JSON.stringify(s)); } catch { /* kayıt kapalıysa oyun yine çalışır */ }
 }
 
-const TILE_LABEL = { yol: 'Yol', tezgah: 'Tezgâh', kuyu: 'Kuyu', pusu: 'Pusu' };
-const THREAD_NAME = { kok: 'kök boya kırmızısı', civit: 'çivit mavisi', cehri: 'cehri sarısı', ceviz: 'ceviz kahvesi' };
-const fmt = (n) => Math.round(n).toLocaleString('tr-TR');
+const TILE_LABEL = d.tiles;
+const THREAD_NAME = d.threads;
+const fmt = (n) => Math.round(n).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US');
 
 function cell(i) {
   if (i <= 6) return [1, i + 1];
@@ -32,7 +39,7 @@ function cell(i) {
 
 function tileName(i) {
   const t = G.TILES[i];
-  return t.type === 'sehir' ? G.CITIES[t.city].name : TILE_LABEL[t.type];
+  return t.type === 'sehir' ? d.cities[t.city] : TILE_LABEL[t.type];
 }
 
 function board() {
@@ -40,30 +47,27 @@ function board() {
     const [r, c] = cell(i);
     const here = i === s.pos;
     const bots = t.type === 'sehir' ? s.bots.filter((b) => b.city === t.city).length : 0;
-    const label = t.type === 'sehir' ? G.CITIES[t.city].abbr : '';
+    const label = t.type === 'sehir' ? d.cityAbbr[t.city] : '';
     return `<div class="tile t-${t.type}${here ? ' here' : ''}" style="grid-area:${r}/${c}" title="${tileName(i)}">
       <span class="glyph">${label}</span>
-      ${bots ? `<span class="bots" aria-label="${bots} rakip kervan">${'<i></i>'.repeat(bots)}</span>` : ''}
-      ${here ? '<span class="caravan" aria-label="Kervanın burada"></span>' : ''}
+      ${bots ? `<span class="bots" aria-label="${u.rivals(bots)}">${'<i></i>'.repeat(bots)}</span>` : ''}
+      ${here ? '<span class="caravan" aria-label="${u.here}"></span>' : ''}
     </div>`;
   }).join('');
   const out = s.dice < 1;
-  return `<section class="board" aria-label="Yol halkası">
+  return `<section class="board" aria-label="${u.board}">
     ${tiles}
     <div class="hub">
       <p class="where">${tileName(s.pos)}</p>
-      <div class="die" aria-label="Son zar">${s.lastRoll || '–'}</div>
+      <div class="die" aria-label="${u.lastRoll}">${s.lastRoll || '–'}</div>
       ${out
-        ? '<button class="btn primary" data-act="newday">Gün doğsun (+10 zar)</button>'
-        : '<button class="btn primary" data-act="roll">Zar at</button>'}
-      <p class="hint">${out ? 'Zarın bitti.' : `${s.dice} zar kaldı`}</p>
+        ? `<button class="btn primary" data-act="newday">${u.newDay}</button>`
+        : `<button class="btn primary" data-act="roll">${u.roll}</button>`}
+      <p class="hint">${out ? u.outOfDice : u.diceLeft(s.dice)}</p>
     </div>
   </section>
   <ul class="legend">
-    <li><span class="key t-sehir"></span>Şehir: pazar</li>
-    <li><span class="key t-tezgah"></span>Tezgâh: bulmaca</li>
-    <li><span class="key t-kuyu"></span>Kuyu: +2 zar</li>
-    <li><span class="key t-pusu"></span>Pusu: yük kaybı</li>
+    ${['sehir', 'tezgah', 'kuyu', 'pusu'].map((k, i) => `<li><span class="key t-${k}"></span>${u.legend[i]}</li>`).join('')}
   </ul>`;
 }
 
@@ -71,10 +75,10 @@ function stats() {
   return `<header class="top">
     <h1>Kervan</h1>
     <dl class="stats">
-      <div><dt>Altın</dt><dd>${fmt(s.gold)}</dd></div>
-      <div><dt>Zar</dt><dd>${s.dice}</dd></div>
-      <div><dt>Yük</dt><dd>${G.load(s)}/${G.capacity(s)}</dd></div>
-      <div class="${s.mult > 1 ? 'hot' : ''}"><dt>Çarpan</dt><dd>×${s.mult}</dd></div>
+      <div><dt>${u.gold}</dt><dd>${fmt(s.gold)}</dd></div>
+      <div><dt>${u.dice}</dt><dd>${s.dice}</dd></div>
+      <div><dt>${u.cargo}</dt><dd>${G.load(s)}/${G.capacity(s)}</dd></div>
+      <div class="${s.mult > 1 ? 'hot' : ''}"><dt>${u.mult}</dt><dd>×${s.mult}</dd></div>
     </dl>
   </header>`;
 }
@@ -83,30 +87,30 @@ function motif(m, owned) {
   const cells = [...m.px].map((b) => `<i class="${b === '1' ? 'on' : ''}"></i>`).join('');
   return `<li class="motif${owned ? ' owned' : ''}">
     <div class="px" aria-hidden="true">${cells}</div>
-    <div><strong>${owned ? m.name : 'Dokunmadı'}</strong><span>${owned ? m.meaning : 'Tezgâhta en az 2 yıldız al.'}</span></div>
+    <div><strong>${owned ? d.motifs[m.id][0] : u.notWoven}</strong><span>${owned ? d.motifs[m.id][1] : u.notWovenHint}</span></div>
   </li>`;
 }
 
 function panels() {
-  const tabs = [['gunluk', 'Yol günlüğü'], ['han', 'Han'], ['album', `Albüm ${s.album.length}/${G.MOTIFS.length}`]];
+  const tabs = [['gunluk', u.tabLog], ['han', u.tabHan], ['album', `${u.tabAlbum} ${s.album.length}/${G.MOTIFS.length}`]];
   let body;
   if (tab === 'han') {
     const max = s.han >= G.MAX_HAN;
     body = `<div class="han">
-      <div class="floors" aria-label="Han ${s.han}. kat">${Array.from({ length: G.MAX_HAN }, (_, i) => `<i class="${i < s.han ? 'built' : ''}"></i>`).join('')}</div>
+      <div class="floors" aria-label="${u.floorsAria(s.han)}">${Array.from({ length: G.MAX_HAN }, (_, i) => `<i class="${i < s.han ? 'built' : ''}"></i>`).join('')}</div>
       <div class="rows">
-        <div class="row"><div><strong>${max ? 'Büyük Han' : `Han, ${s.han}. kat`}</strong><span>Kervan ${G.capacity(s)} yük taşır. Her sefer ${100 * s.han} altın getirir.</span></div>
-          ${max ? '<span class="pill">Tamamlandı</span>' : `<button class="btn" data-act="upgrade" ${s.gold < G.hanCost(s) ? 'disabled' : ''}>Kat çık · ${fmt(G.hanCost(s))}</button>`}</div>
-        <div class="row"><div><strong>Muhafız: ${s.guards}</strong><span>Her muhafız bir pusuyu püskürtür.</span></div>
-          <button class="btn" data-act="guard" ${s.gold < G.GUARD_COST ? 'disabled' : ''}>Tut · ${G.GUARD_COST}</button></div>
-        <div class="row"><div><strong>${s.laps} sefer</strong><span>Şian'dan her geçiş bir sefer sayılır.</span></div>
-          <button class="btn ghost" data-act="reset">Baştan başla</button></div>
+        <div class="row"><div><strong>${max ? u.hanMax : u.hanFloor(s.han)}</strong><span>${u.hanDesc(G.capacity(s), 100 * s.han)}</span></div>
+          ${max ? `<span class="pill">${u.done}</span>` : `<button class="btn" data-act="upgrade" ${s.gold < G.hanCost(s) ? 'disabled' : ''}>${u.upgrade} · ${fmt(G.hanCost(s))}</button>`}</div>
+        <div class="row"><div><strong>${u.guards(s.guards)}</strong><span>${u.guardDesc}</span></div>
+          <button class="btn" data-act="guard" ${s.gold < G.GUARD_COST ? 'disabled' : ''}>${u.hire} · ${G.GUARD_COST}</button></div>
+        <div class="row"><div><strong>${u.laps(s.laps)}</strong><span>${u.lapsDesc}</span></div>
+          <button class="btn ghost" data-act="reset">${u.reset}</button></div>
       </div>
     </div>`;
   } else if (tab === 'album') {
     body = `<ul class="album">${G.MOTIFS.map((m) => motif(m, s.album.includes(m.id))).join('')}</ul>`;
   } else {
-    body = `<ol class="log">${s.log.map((e) => `<li class="k-${e.k}">${e.t}</li>`).join('')}</ol>`;
+    body = `<ol class="log">${s.log.map((e) => `<li class="k-${e.k}">${logText(lang, e)}</li>`).join('')}</ol>`;
   }
   return `<nav class="tabs" role="tablist">${tabs.map(([id, name]) =>
     `<button role="tab" aria-selected="${tab === id}" data-act="tab" data-id="${id}">${name}</button>`).join('')}</nav>
@@ -114,25 +118,25 @@ function panels() {
 }
 
 function market(p) {
-  const city = G.CITIES[p.city];
+  const city = d.cities[p.city];
   const rows = G.GOODS.map((g) => {
     const r = G.ratio(s, p.city, g.id);
-    const tag = r < 0.8 ? '<span class="pill cheap">ucuz</span>' : r > 1.3 ? '<span class="pill dear">pahalı</span>' : '';
+    const tag = r < 0.8 ? `<span class="pill cheap">${u.cheap}</span>` : r > 1.3 ? `<span class="pill dear">${u.dear}</span>` : '';
     const buyP = G.price(s, p.city, g.id);
     const canBuy = s.gold >= buyP && G.load(s) < G.capacity(s) && s.stock[p.city][g.id] >= 2;
     return `<li class="good">
-      <div class="gname"><strong>${g.name}</strong>${tag}<span>Sende ${s.cargo[g.id]}</span></div>
-      <button class="btn" data-act="buy" data-id="${g.id}" ${canBuy ? '' : 'disabled'}>Al · ${fmt(buyP)}</button>
-      <button class="btn" data-act="sell" data-id="${g.id}" ${s.cargo[g.id] ? '' : 'disabled'}>Sat · ${fmt(G.sellPrice(s, p.city, g.id))}</button>
+      <div class="gname"><strong>${d.goods[g.id]}</strong>${tag}<span>${u.youHave(s.cargo[g.id])}</span></div>
+      <button class="btn" data-act="buy" data-id="${g.id}" ${canBuy ? '' : 'disabled'}>${u.buy} · ${fmt(buyP)}</button>
+      <button class="btn" data-act="sell" data-id="${g.id}" ${s.cargo[g.id] ? '' : 'disabled'}>${u.sell} · ${fmt(G.sellPrice(s, p.city, g.id))}</button>
     </li>`;
   }).join('');
-  const rivals = s.bots.filter((b) => b.city === p.city).map((b) => b.name);
-  return `<div class="sheet" role="dialog" aria-label="${city.name} pazarı">
-    <h2>${city.name} pazarı</h2>
-    <p class="sub">${fmt(s.gold)} altın · yük ${G.load(s)}/${G.capacity(s)}${rivals.length ? ` · ${rivals.join(', ')} de burada` : ''}</p>
-    ${s.mult > 1 ? `<p class="note">Usta çarpanı ×${s.mult}: satışların değerli. İlk alımda çarpan biter, önce sat.</p>` : ''}
+  const rivals = s.bots.filter((b) => b.city === p.city).map((b) => d.bots[b.id]);
+  return `<div class="sheet" role="dialog" aria-label="${u.market(city)}">
+    <h2>${u.market(city)}</h2>
+    <p class="sub">${u.goldN(fmt(s.gold))} · ${u.cargoN(G.load(s), G.capacity(s))}${rivals.length ? ` · ${u.alsoHere(rivals.join(', '))}` : ''}</p>
+    ${s.mult > 1 ? `<p class="note">${u.multNote(s.mult)}</p>` : ''}
     <ul class="goods">${rows}</ul>
-    <button class="btn primary wide" data-act="leave">Yola devam</button>
+    <button class="btn primary wide" data-act="leave">${u.onward}</button>
   </div>`;
 }
 
@@ -141,30 +145,30 @@ function loom(p) {
   const kilim = z.rows.map((c, i) => {
     const state = i < z.row ? 'done' : i === z.row && z.status === 'play' ? 'now' : 'todo';
     const fill = state === 'now' ? z.woven : state === 'done' ? z.per : 0;
-    return `<li class="weft ${state} th-${c}" aria-label="${i + 1}. sıra: ${THREAD_NAME[c]}">
+    return `<li class="weft ${state} th-${c}" aria-label="${u.rowAria(i + 1, THREAD_NAME[c])}">
       ${Array.from({ length: z.per }, (_, k) => `<i class="${k < fill ? 'in' : ''}"></i>`).join('')}</li>`;
   }).join('');
   const buf = Array.from({ length: z.cap }, (_, i) =>
     `<i class="slot${i === z.cap - 1 ? ' last' : ''}${z.buf[i] ? ` spool th-${z.buf[i]}` : ''}"></i>`).join('');
   const cols = z.cols.map((col, c) => `<button class="stack" data-act="tap" data-id="${c}" ${col.length && z.status === 'play' ? '' : 'disabled'}
-      aria-label="${col.length ? `${c + 1}. sütun, üstte ${THREAD_NAME[col[col.length - 1]]}` : `${c + 1}. sütun boş`}">
+      aria-label="${col.length ? u.colAria(c + 1, THREAD_NAME[col[col.length - 1]]) : u.colEmpty(c + 1)}">
       ${col.map((t, i) => `<i class="spool th-${t}${i === col.length - 1 ? ' topmost' : ''}"></i>`).join('')}
     </button>`).join('');
   let foot;
   if (z.status === 'play') {
-    foot = `<p class="sub">Sıradaki renk: <b class="th-text th-${z.rows[z.row]}">${THREAD_NAME[z.rows[z.row]]}</b>. En iyi çözüm mekikte en çok ${z.best} iplik bekletir.</p>`;
+    foot = `<p class="sub">${u.nextColor}: <b class="th-text th-${z.rows[z.row]}">${THREAD_NAME[z.rows[z.row]]}</b>. ${u.best(z.best)}</p>`;
   } else {
     const n = stars(z);
     foot = `<div class="result">
-      <p class="starline" aria-label="${n} yıldız">${'★'.repeat(n)}<span>${'★'.repeat(3 - n)}</span></p>
-      <p class="sub">${n ? `Kilim tamam. Bir sonraki pazarda satışların ×${G.MULT_BY_STARS[n]}.` : 'Mekik doldu. Bu kilim yarım kaldı.'}</p>
-      <button class="btn primary wide" data-act="finish">Yola devam</button>
+      <p class="starline" aria-label="${u.starsAria(n)}">${'★'.repeat(n)}<span>${'★'.repeat(3 - n)}</span></p>
+      <p class="sub">${n ? u.loomWon(G.MULT_BY_STARS[n]) : u.loomLost}</p>
+      <button class="btn primary wide" data-act="finish">${u.onward}</button>
     </div>`;
   }
-  return `<div class="sheet loom" role="dialog" aria-label="Dokuma tezgâhı">
-    <h2>Dokuma tezgâhı</h2>
+  return `<div class="sheet loom" role="dialog" aria-label="${u.loom}">
+    <h2>${u.loom}</h2>
     <ol class="kilim">${kilim}</ol>
-    <p class="cap">Mekik <span>son yuva dolarsa kaybedersin</span></p>
+    <p class="cap">${u.shuttle} <span>${u.shuttleHint}</span></p>
     <div class="buffer">${buf}</div>
     <div class="stacks">${cols}</div>
     ${foot}
