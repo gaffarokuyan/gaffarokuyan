@@ -128,7 +128,13 @@ button:disabled { cursor: not-allowed; }
   filter: drop-shadow(0 3px 0 #6b2a17) drop-shadow(0 6px 10px rgb(0 0 0 / 0.4));
 }
 .trip { font: 800 12px/1 var(--body); color: var(--cream); background: var(--glass); border: 1.5px solid var(--glass-line); padding: 6px 10px; border-radius: 999px; }
-.helpbtn { margin-left: auto; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.35)); }
+.langbtn {
+  margin-left: auto; min-width: 46px; height: 36px; padding: 0 10px; border-radius: 999px;
+  font: 400 15px/1 var(--display); letter-spacing: 0.04em; color: var(--cream);
+  background: var(--glass); border: 1.5px solid var(--glass-line);
+}
+.langbtn:hover { border-color: rgb(242 182 50 / 0.6); }
+.helpbtn { margin-left: 4px; width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center; filter: drop-shadow(0 4px 6px rgb(0 0 0 / 0.35)); }
 .helpbtn .i { width: 46px; height: 46px; }
 .res { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 6px; }
 .res li {
@@ -351,7 +357,7 @@ button:disabled { cursor: not-allowed; }
 .pill.cheap { background: linear-gradient(#4fd1c5, #1f9a8f); box-shadow: 0 2px 0 #12625b; }
 .pill.dear { background: linear-gradient(#ef6a55, #b8322a); box-shadow: 0 2px 0 #7d1f1c; }
 .trade { display: grid; justify-items: center; gap: 2px; min-width: 76px; min-height: 58px; padding: 6px 10px; border-radius: 16px; }
-.trade small { font: 800 11px/1 var(--body); letter-spacing: 0.06em; text-transform: uppercase; text-shadow: none; opacity: 0.92; }
+.trade small { font: 800 11px/1 var(--body); letter-spacing: 0.02em; text-transform: uppercase; text-shadow: none; opacity: 0.92; }
 .trade b { font: 400 22px/1 var(--display); }
 .delta { position: absolute; top: -10px; right: -6px; z-index: 1; font: 400 12px/1 var(--display); font-style: normal; padding: 4px 6px 3px; border-radius: 999px; color: #fff; text-shadow: none; }
 .up .delta { background: var(--good); box-shadow: 0 2px 0 #1d6a3c; }
@@ -574,3 +580,8 @@ button:disabled { cursor: not-allowed; }
   .res li .i { width: 23px; height: 23px; }
   .res small { letter-spacing: 0; }
 }
+
+/* Dil seçici */
+.langpick h2 { margin-top: 18px; font-size: 24px; }
+.langs { display: grid; gap: 14px; width: 100%; margin: 8px 0 6px; }
+.langs .btn3d { min-height: 56px; font-size: 21px; }

@@ -30,7 +30,7 @@ Kazancınla kervansarayına kat çık, daha çok yük taşı, pusulara karşı m
 • İnternetsiz oynanır
 • Reklam yok, uygulama içi satın alma yok
 • Hiçbir kişisel veri toplanmaz
-• Türkçe ve İngilizce
+• Türkçe, İngilizce ve Kürtçe (Kurmancî)
 
 ## English
 
@@ -60,7 +60,7 @@ Spend your profits on new floors, carry more cargo and hire guards against ambus
 • Plays offline
 • No ads, no in-app purchases
 • Collects no personal data
-• English and Turkish
+• English, Turkish and Kurdish (Kurmanji)
 
 ## Görseller
 
@@ -68,7 +68,7 @@ Spend your profits on new floors, carry more cargo and hire guards against ambus
 | --- | --- |
 | Uygulama simgesi (512×512) | `store/icon-512.png` |
 | Öne çıkan görsel (1024×500) | `store/feature-graphic-tr.png`, `store/feature-graphic-en.png` |
-| Telefon ekran görüntüleri (1080×2160) | `store/screenshots-tr/`, `store/screenshots-en/` |
+| Telefon ekran görüntüleri (1080×2160) | `store/screenshots-tr/`, `store/screenshots-en/`, `store/screenshots-ku/` |
 
 ## Kategori ve etiketler
 

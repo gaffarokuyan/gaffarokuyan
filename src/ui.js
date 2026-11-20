@@ -1,13 +1,27 @@
 import * as G from './game.js';
 import { stars } from './loom.js';
-import { DICT, logText } from './i18n.js';
+import { DICT, LANG_NAMES, logText } from './i18n.js';
 import { icon, cityArt, TILE_ICON } from './icons.js';
 
-// Dil tarayıcıdan seçilir: Türkçe tarayıcıda Türkçe, diğerlerinde İngilizce.
-const lang = (navigator.language || '').toLowerCase().startsWith('tr') ? 'tr' : 'en';
-const d = DICT[lang];
-const u = d.ui;
-document.documentElement.lang = lang;
+// Dil: oyuncunun seçtiği; seçmediyse telefonun dili (Türkçe, Kürtçe ya da İngilizce).
+const LANG_KEY = 'karwan-lang';
+function detectLang() {
+  const saved = store(LANG_KEY);
+  if (saved && DICT[saved]) return saved;
+  for (const l of navigator.languages?.length ? navigator.languages : [navigator.language || '']) {
+    const c = l.toLowerCase();
+    if (c.startsWith('tr')) return 'tr';
+    if (c.startsWith('ku') || c.startsWith('kmr')) return 'ku';
+    if (c.startsWith('en')) return 'en';
+  }
+  return 'en';
+}
+let lang, d, u;
+function setLang(l) {
+  lang = l; d = DICT[l]; u = d.ui;
+  document.documentElement.lang = l;
+}
+setLang(detectLang());
 
 const KEY = 'kervan-v3';
 const TUT_KEY = 'kervan-tutorial-v1';
@@ -22,13 +36,14 @@ let toast = null;
 let toastTimer = 0;
 let tut = null; // öğretici adımı ya da null
 let confirmReset = false;
+let langOpen = false; // dil seçici açık mı
 let lastSheet = ''; // giriş animasyonu yalnızca yeni açılan sayfada oynasın
 let lastGold = null;
 
 // Android uygulamasında yerel köprü: dokunsal geri bildirim. Tarayıcıda yoksa sessizce geçer.
 const haptic = (kind) => { try { window.KarwanNative?.haptic(kind); } catch { /* köprü yok */ } };
 
-const fmt = (n) => Math.round(n).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US');
+const fmt = (n) => Math.round(n).toLocaleString(lang === 'en' ? 'en-US' : 'tr-TR');
 const N = G.TILES.length;
 
 function store(get, set) {
@@ -120,6 +135,7 @@ function hud() {
     <div class="brand">
       <h1 class="logo">Karwan</h1>
       <span class="trip">${u.trip(s.laps + 1)}</span>
+      <button class="langbtn" data-act="langopen" aria-label="${u.language}: ${LANG_NAMES[lang]}">${lang.toUpperCase()}</button>
       <button class="helpbtn" data-act="help" aria-label="${u.help}">${icon('help')}</button>
     </div>
     <ul class="res">
@@ -384,6 +400,16 @@ function tutorial() {
   </div></div>`;
 }
 
+/* ---------- Dil seçici ---------- */
+function langPicker() {
+  return `<div class="scrim center"><div class="tut parchment langpick" role="dialog" aria-modal="true" aria-labelledby="lang-title">
+    <span class="band" aria-hidden="true"></span>
+    <h2 id="lang-title">Dil · Language · Ziman</h2>
+    <div class="langs">${Object.entries(LANG_NAMES).map(([k, name]) =>
+      `<button class="btn3d ${k === lang ? 'orange' : 'teal'} wide" data-act="setlang" data-id="${k}" ${k === lang ? 'aria-current="true"' : ''}>${name}</button>`).join('')}</div>
+  </div></div>`;
+}
+
 /* ---------- Çizim ---------- */
 const VIEWS = { route: routeView, inn: innView, album: albumView, log: logView };
 
@@ -395,7 +421,7 @@ function render() {
   const sheet = key ? `<div class="scrim${enter}">${p.type === 'pazar' ? market(p) : loom(p)}</div>` : '';
   const scrollY = window.scrollY;
   const sheetScroll = document.querySelector('.sheet')?.scrollTop ?? 0;
-  app.innerHTML = `<div class="sky" aria-hidden="true"></div><div class="shell">${hud()}<main class="view view-${view}">${VIEWS[view]()}</main></div>${dock()}${sheet}${tut !== null ? tutorial() : ''}`;
+  app.innerHTML = `<div class="sky" aria-hidden="true"></div><div class="shell">${hud()}<main class="view view-${view}">${VIEWS[view]()}</main></div>${dock()}${sheet}${tut !== null && !langOpen ? tutorial() : ''}${langOpen ? langPicker() : ''}`;
   window.scrollTo(0, scrollY);
   if (!enter && sheetScroll) { const el = document.querySelector('.sheet'); if (el) el.scrollTop = sheetScroll; }
   if (toast) toast.fresh = false;
@@ -468,6 +494,8 @@ const actions = {
   guard: () => G.hireGuard(s),
   tab: (id) => { view = id; window.scrollTo(0, 0); },
   help: () => { tut = 0; },
+  langopen: () => { langOpen = true; },
+  setlang: (id) => { if (DICT[id]) { setLang(id); store(LANG_KEY, id); } langOpen = false; },
   tutnext: () => { tut = tut + 1 < u.tutorial.length ? tut + 1 : null; if (tut === null) store(TUT_KEY, '1'); },
   tutskip: () => { tut = null; store(TUT_KEY, '1'); },
   reset: () => {
@@ -494,6 +522,7 @@ app.addEventListener('click', (e) => {
 // true dönerse uygulama kapanmaz; false dönerse sistem uygulamadan çıkar.
 window.karwanBack = () => {
   if (anim) return true;
+  if (langOpen) { langOpen = false; render(); return true; }
   if (tut !== null) { actions.tutskip(); render(); return true; }
   const p = s.pending;
   if (p?.type === 'pazar') { G.leaveMarket(s); render(); return true; }
@@ -508,7 +537,9 @@ window.karwanBack = () => {
 function start(data) {
   s = restore(data?.state);
   if (data?.view) view = data.view;
+  // İlk açılış: önce dil, sonra öğretici.
   if (!store(TUT_KEY) && !data?.state) tut = 0;
+  if (!store(LANG_KEY) && !data?.state) langOpen = true;
   render();
 }
 const hot = window.claude?.hot;

@@ -56,7 +56,7 @@ const tr = {
     perkCargo: 'yük kapasitesi', perkIncome: 'altın her seferde', needGold: (n) => `${n} altın daha gerek`,
     confirmReset: 'Emin misin? Tekrar dokun.', tripsStat: 'Sefer', incomeStat: 'Sefer geliri', capStat: 'Kapasite',
     albumDone: (n, m) => `${m} motiften ${n} tanesi dokundu`, logEmpty: 'Henüz bir şey olmadı.',
-    next: 'İleri', start: 'Başla', skip: 'Geç', stepOf: (i, n) => `${i} / ${n}`,
+    language: 'Dil', next: 'İleri', start: 'Başla', skip: 'Geç', stepOf: (i, n) => `${i} / ${n}`,
     tutorial: [
       ['die', 'Zar at, yola çık', 'Zar kervanını 1–6 durak ilerletir. "Önündeki yol" şeridi hangi sayının seni nereye götüreceğini gösterir.'],
       ['city', 'Ucuza al, pahalıya sat', "Her şehrin fiyatı farklı. Şian'da ipek ucuz, İstanbul'da pahalı. Satış fiyatın yeşilse kâr ediyorsun."],
@@ -133,7 +133,7 @@ const en = {
     perkCargo: 'cargo space', perkIncome: 'gold per trip', needGold: (n) => `${n} more gold needed`,
     confirmReset: 'Sure? Tap again.', tripsStat: 'Trips', incomeStat: 'Per trip', capStat: 'Capacity',
     albumDone: (n, m) => `${n} of ${m} motifs woven`, logEmpty: 'Nothing has happened yet.',
-    next: 'Next', start: 'Start', skip: 'Skip', stepOf: (i, n) => `${i} of ${n}`,
+    language: 'Language', next: 'Next', start: 'Start', skip: 'Skip', stepOf: (i, n) => `${i} of ${n}`,
     tutorial: [
       ['die', 'Roll to travel', 'Each roll moves your caravan 1–6 spaces. The road-ahead strip shows where each number takes you.'],
       ['city', 'Buy cheap, sell dear', "Every city has its own prices. Silk is cheap in Xi'an and dear in Istanbul. A green sell price means profit."],
@@ -161,7 +161,89 @@ const en = {
   },
 };
 
-export const DICT = { tr, en };
+// Kurmancî (Latin alfabesi). Yer adlarının "li ...ê" ve "...ya ...ê" hâlleri ayrıca tutulur.
+const KU_OBL = ['Şîanê', 'Kaşxerê', 'Semerqendê', 'Buxarayê', 'Tebrîzê', 'Stenbolê'];
+const ku = {
+  cities: ['Şîan', 'Kaşxer', 'Semerqend', 'Buxara', 'Tebrîz', 'Stenbol'],
+  cityLoc: KU_OBL.map((c) => `li ${c}`),
+  cityAbbr: ['ŞÎA', 'KAŞ', 'SEM', 'BUX', 'TEB', 'STE'],
+  goods: { ipek: 'Hevrîşim', baharat: 'Biharat', cay: 'Çay', kilim: 'Kilîm' },
+  goodsLower: { ipek: 'hevrîşim', baharat: 'biharat', cay: 'çay', kilim: 'kilîm' },
+  bots: ['Karwanê Hesin', 'Karwanê Zumrût', 'Karwanê Reşeba'],
+  threads: { kok: 'sor', civit: 'şîn', cehri: 'zer', ceviz: 'qehweyî' },
+  tiles: { yol: 'Rê', tezgah: 'Tevn', kuyu: 'Bîr', pusu: 'Kemîn' },
+  motifs: {
+    goz: ['Çav', 'Ji çavê nebaş diparêze.'],
+    elibelinde: ['Dest li Kemberê', 'Bereket û dayikî.'],
+    kocboynuzu: ['Qiloçê Beran', 'Hêz û mêrxasî.'],
+    hayatagaci: ['Dara Jiyanê', 'Hêviya nemiriyê.'],
+    akrep: ['Dûpişk', 'Parastin ji xerabiyê.'],
+    suyolu: ['Rêya Avê', 'Berdewamiya jiyanê.'],
+  },
+  ui: {
+    gold: 'Zêr', dice: 'Zar', cargo: 'Bar', mult: 'Xelat',
+    board: 'Xeleka rê', rivals: (n) => `${n} karwanên hevrik`, here: 'Karwanê te li vir e', lastRoll: 'Zara dawî',
+    roll: 'Zarê bavêje', newDay: 'Roj hilat (+10 zar)', outOfDice: 'Zarên te qediyan.', diceLeft: (n) => `${n} zar man`,
+    legend: ['Bajar: bazar', 'Tevn: hûnandin', 'Bîr: +2 zar', 'Kemîn: windabûna bar'],
+    tabLog: 'Rojnivîska rê', tabHan: 'Xan', tabAlbum: 'Albûm',
+    hanMax: 'Xana Mezin', hanFloor: (n) => `Xan, qata ${n}.`,
+    hanDesc: (cap, inc) => `Karwan ${cap} bar hildigire. Her ger ${inc} zêr tîne.`,
+    done: 'Temam bû', upgrade: 'Qatê ava bike', floorsAria: (n) => `Xan, qata ${n}.`,
+    guards: (n) => `Parêzvan: ${n}`, guardDesc: 'Her parêzvan kemînekê paşve diajo.', hire: 'Bigire',
+    laps: (n) => `${n} ger`, lapsDesc: 'Her derbasbûna di Şîanê re gerek tê hesibandin.', reset: 'Ji nû ve dest pê bike',
+    notWoven: 'Hîn nehatiye hûnandin', notWovenHint: 'Li tevnê herî kêm 2 stêran bistîne.',
+    market: (c) => `Bazara ${KU_OBL[ku.cities.indexOf(c)] ?? c}`, cheap: 'erzan', dear: 'biha', youHave: (n) => `Li cem te ${n}`,
+    buy: 'Bikire', sell: 'Bifiroşe', goldN: (n) => `${n} zêr`, cargoN: (a, b) => `bar ${a}/${b}`,
+    alsoHere: (names) => `${names} jî li vir e`,
+    multNote: (m) => `Xelata hostatiyê ×${m}: firotinên te bi qîmet in. Bi kirîna yekem xelat diqede, pêşî bifiroşe.`,
+    onward: 'Rê bidomîne',
+    loom: 'Tevn', rowAria: (i, c) => `Rêza ${i}: ${c}`,
+    shuttle: 'Mekok', shuttleHint: 'heke cihê dawî tije bibe, tu winda dikî',
+    colAria: (i, c) => `Stûna ${i}, li jor ${c}`, colEmpty: (i) => `Stûna ${i} vala ye`,
+    nextColor: 'Rengê din', best: (n) => `Çareseriya herî baş herî zêde ${n} ta di mekokê de dihêle.`,
+    starsAria: (n) => `${n} stêr`, loomWon: (m) => `Kilîm temam bû. Li bazara din firotinên te ×${m} in.`,
+    loomLost: 'Mekok tije bû. Ev kilîm nîvco ma.',
+    tabRoute: 'Rê', tabInn: 'Xan', tabLogShort: 'Rojnivîsk', help: 'Çawa tê lîstin',
+    ahead: 'Rêya li pêş', cargoEmpty: 'Karwan vala ye. Li bajarekî tiştên erzan bikire.',
+    goals: 'Armanc', trip: (n) => `Gera ${n}.`,
+    holding: (n, avg) => `Li cem te ${n} · bihayê navîn ${avg}`, sellAll: (n) => `Hemûyan bifiroşe (${n})`,
+    marketSub: 'Li vir erzan bikire, li pêşiya rê biha bifiroşe.',
+    loomHow: 'Li stûnekê bitikîne. Heke makara jorîn rengê pêwîst be tê hûnandin; wekî din di mekokê de disekine.',
+    newMotif: 'Motîfa nû', floorOf: (n, m) => `Qata ${n} ji ${m}`, nextFloor: 'Qata din',
+    perkCargo: 'cihê bar', perkIncome: 'zêr her ger', needGold: (n) => `${n} zêr din pêwîst e`,
+    confirmReset: 'Tu bawer î? Dîsa bitikîne.', tripsStat: 'Ger', incomeStat: 'Dahata gerê', capStat: 'Kapasîte',
+    albumDone: (n, m) => `${n} ji ${m} motîfan hatin hûnandin`, logEmpty: 'Hîn tiştek nebûye.',
+    language: 'Ziman', next: 'Pêş', start: 'Dest pê bike', skip: 'Derbas bike', stepOf: (i, n) => `${i} / ${n}`,
+    tutorial: [
+      ['die', 'Zarê bavêje, bi rê keve', 'Her zar karwanê te 1–6 cihan pêş dibe. Xeta "Rêya li pêş" nîşan dide ku her hejmar dê te bibe ku derê.'],
+      ['city', 'Erzan bikire, biha bifiroşe', 'Bihayê her bajarî cuda ye. Li Şîanê hevrîşim erzan e, li Stenbolê biha ye. Heke bihayê firotinê kesk be, tu qezenc dikî.'],
+      ['loom', 'Bihûne, qezenca xwe pir bike', 'Li tevnê rengan bi rêzê bihûne. Çiqas kêmtir ta li bendê bimînin, ewqas zêdetir stêr; stêr firotinên te yên li bazara din heta ×2 zêde dikin.'],
+      ['inn', 'Xana xwe mezin bike', 'Bi qezenca xwe qatan li xana xwe zêde bike û li dijî kemînan parêzvanan bigire. Armanc: qata 5. û hemû 6 motîf.'],
+    ],
+  },
+  log: {
+    start: () => 'Karwanê te li Şîanê amade ye. Erzan bikire, li pêşiya rê biha bifiroşe.',
+    lap: ({ n, bonus }) => `Gera ${n}. temam bû. Xana te ji te re ${bonus} zêr anî.`,
+    botSell: ({ bot, city, qty, good }, d) => `${d.bots[bot]} ${d.cityLoc[city]} ${qty} ${d.goodsLower[good]} firot. Biha daket.`,
+    botBuy: ({ bot, city, qty, good }, d) => `${d.bots[bot]} ${d.cityLoc[city]} ${qty} ${d.goodsLower[good]} kirî. Biha bilind bû.`,
+    well: () => 'Te li ber bîrê bêhna xwe veda. Te 2 zar qezenc kirin.',
+    road: ({ g }) => `Te di rê de rêberiya bazirganekî kir. ${g} zêr.`,
+    guarded: ({ bot }, d) => `${d.bots[bot]} kemîn danî, lê parêzvanê te ew paşve ajot.`,
+    robbedGold: ({ bot, lost }, d) => `${d.bots[bot]} kemîn danî. Barê te tune bû, te ${lost} zêr winda kir.`,
+    robbedGoods: ({ bot, goods }, d) => `${d.bots[bot]} kemîn danî û ${tally(goods, d).join(' û ')} ji te bir. Tu dikarî li xanê parêzvanan bigirî.`,
+    loomFail: () => 'Mekok tije bû, kilîm nîvco ma.',
+    loomWin: ({ n, mult, motif, album }, d) => `Te kilîm bi ${n} stêran hûnand. Li bazara din firotinên te ×${mult} in.`
+      + (motif ? ` Motîfa ${d.motifs[motif][0]} ket albûmê.` : '')
+      + (album ? ' Albûm temam bû: 500 zêr.' : ''),
+    hanMax: () => 'Xana te êdî Xana Mezin e. Hemû Rêya Hevrîşimê behsa te dike.',
+    hanUp: ({ han, cap }) => `Xan bû qata ${han}. Karwan êdî ${cap} bar hildigire.`,
+    newDay: () => 'Roj hilat. 10 zar nû bûn.',
+  },
+};
+
+export const DICT = { tr, en, ku };
+// Dil seçicide görünen adlar (her dil kendi adıyla).
+export const LANG_NAMES = { tr: 'Türkçe', en: 'English', ku: 'Kurdî (Kurmancî)' };
 export const LANGS = Object.keys(DICT);
 
 export function logText(lang, entry) {

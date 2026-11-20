@@ -116,7 +116,7 @@ test('han yükseltmesi kapasiteyi artırır ve 5. katta durur', () => {
   assert.equal(s.han, G.MAX_HAN);
 });
 
-test('her günlük mesajı iki dilde de yazılabiliyor', async () => {
+test('her günlük mesajı her dilde yazılabiliyor', async () => {
   const { logText, LANGS } = await import('../src/i18n.js');
   const rng = seeded(11);
   const s = G.newGame();
@@ -155,8 +155,14 @@ test('ortalama alış maliyeti alım, satış ve pusuda doğru izlenir', () => {
   assert.equal(G.avgCost(s, 'ipek'), 0);
 });
 
-test('iki dilde de aynı arayüz metinleri var', async () => {
+test('her dilde aynı arayüz metinleri var', async () => {
   const { DICT } = await import('../src/i18n.js');
-  assert.deepEqual(Object.keys(DICT.tr.ui).sort(), Object.keys(DICT.en.ui).sort());
-  assert.equal(DICT.tr.ui.tutorial.length, DICT.en.ui.tutorial.length);
+  for (const lang of Object.keys(DICT)) {
+    assert.deepEqual(Object.keys(DICT[lang].ui).sort(), Object.keys(DICT.tr.ui).sort(), lang);
+    assert.deepEqual(Object.keys(DICT[lang].log).sort(), Object.keys(DICT.tr.log).sort(), lang);
+    assert.equal(DICT[lang].ui.tutorial.length, DICT.tr.ui.tutorial.length, lang);
+    for (const k of ['cities', 'cityAbbr']) assert.equal(DICT[lang][k].length, 6, `${lang}.${k}`);
+    assert.equal(DICT[lang].bots.length, G.BOT_COUNT, `${lang}.bots`);
+  }
+  assert.equal(DICT.ku.ui.market('Semerqend'), 'Bazara Semerqendê');
 });
