@@ -1,0 +1,10 @@
+.gradle/
+build/
+app/build/
+local.properties
+# Oyun dosyaları npm run build ile üretilir
+app/src/main/assets/
+# İmza anahtarı ve parolaları asla depoya girmez
+keystore.properties
+*.jks
+*.keystore

@@ -25,6 +25,9 @@ let confirmReset = false;
 let lastSheet = ''; // giriş animasyonu yalnızca yeni açılan sayfada oynasın
 let lastGold = null;
 
+// Android uygulamasında yerel köprü: dokunsal geri bildirim. Tarayıcıda yoksa sessizce geçer.
+const haptic = (kind) => { try { window.KervanNative?.haptic(kind); } catch { /* köprü yok */ } };
+
 const fmt = (n) => Math.round(n).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US');
 const N = G.TILES.length;
 
@@ -381,6 +384,7 @@ function roll() {
   const fresh = [];
   for (const e of s.log) { if (e === marker) break; fresh.push(e); }
   const events = fresh.filter((e) => e.k !== 'pazar');
+  haptic('roll');
   if (reduceMotion) { showToast(events); return; }
   const steps = s.lastRoll;
   anim = { pos: from, face: s.lastRoll, rolling: true };
@@ -396,6 +400,7 @@ function roll() {
     const hop = () => {
       if (i >= steps) { anim = null; showToast(events); render(); return; }
       anim.pos = (from + ++i) % N;
+      haptic('tick');
       render();
       setTimeout(hop, 170);
     };
@@ -432,8 +437,24 @@ app.addEventListener('click', (e) => {
   const before = s.gold;
   actions[act]?.(el.dataset.id);
   if (['buy', 'sell', 'sellall', 'upgrade', 'guard'].includes(act)) floater(el, s.gold - before);
+  if (s.gold !== before) haptic(s.gold > before ? 'gain' : 'tick');
   render();
 });
+
+// Android geri tuşu: önce açık pencereyi kapatır, sonra Yol sekmesine döner.
+// true dönerse uygulama kapanmaz; false dönerse sistem uygulamadan çıkar.
+window.kervanBack = () => {
+  if (anim) return true;
+  if (tut !== null) { actions.tutskip(); render(); return true; }
+  const p = s.pending;
+  if (p?.type === 'pazar') { G.leaveMarket(s); render(); return true; }
+  if (p?.type === 'tezgah') {
+    if (p.puzzle.status !== 'play') { G.finishLoom(s); render(); }
+    return true; // dokuma yarıda bırakılamaz
+  }
+  if (view !== 'route') { view = 'route'; render(); return true; }
+  return false;
+};
 
 function start(data) {
   s = restore(data?.state);

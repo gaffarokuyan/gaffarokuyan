@@ -1,0 +1,5 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Android 11 ve öncesi için: oyun kaydı (WebView yerel depolaması) yedeklenir. -->
+<full-backup-content>
+    <include domain="root" path="app_webview/" />
+</full-backup-content>

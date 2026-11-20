@@ -34,3 +34,13 @@ npm run dev     # derler ve yerelde sunar
 | `src/ui.js`, `src/style.css` | Tek ekranlık web arayüzü. |
 | `tests/` | Kural testleri (`node --test`). |
 | `build.mjs` | Her şeyi tek HTML dosyasına paketler. |
+
+## Android
+
+`android/` klasörü oyunu internetsiz çalıştıran yerel bir Android uygulamasıdır (Kotlin, WebView). Oyun dosyaları ve yazı tipleri uygulamanın içine paketlenir; internet izni yoktur.
+
+```bash
+npm run android   # oyunu derler, imzalı AAB ve APK üretir
+```
+
+İmza anahtarı (`android/kervan-upload.jks`) ve parolası (`android/keystore.properties`) depoya girmez. Mağaza metinleri, görseller, gizlilik politikası ve yükleme adımları `store/` klasöründedir; başlangıç noktası `store/PLAY-STORE-REHBERI.md`.
