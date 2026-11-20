@@ -26,7 +26,7 @@ let lastSheet = ''; // giriş animasyonu yalnızca yeni açılan sayfada oynası
 let lastGold = null;
 
 // Android uygulamasında yerel köprü: dokunsal geri bildirim. Tarayıcıda yoksa sessizce geçer.
-const haptic = (kind) => { try { window.KervanNative?.haptic(kind); } catch { /* köprü yok */ } };
+const haptic = (kind) => { try { window.KarwanNative?.haptic(kind); } catch { /* köprü yok */ } };
 
 const fmt = (n) => Math.round(n).toLocaleString(lang === 'tr' ? 'tr-TR' : 'en-US');
 const N = G.TILES.length;
@@ -72,7 +72,7 @@ function hud() {
     `<li class="${cls}">${icon(ic)}<span><b>${value}</b><small>${label}</small></span></li>`;
   return `<header class="hud">
     <div class="brand">
-      <h1 class="logo">Kervan</h1>
+      <h1 class="logo">Karwan</h1>
       <span class="trip">${u.trip(s.laps + 1)}</span>
       <button class="helpbtn" data-act="help" aria-label="${u.help}">${icon('help')}</button>
     </div>
@@ -443,7 +443,7 @@ app.addEventListener('click', (e) => {
 
 // Android geri tuşu: önce açık pencereyi kapatır, sonra Yol sekmesine döner.
 // true dönerse uygulama kapanmaz; false dönerse sistem uygulamadan çıkar.
-window.kervanBack = () => {
+window.karwanBack = () => {
   if (anim) return true;
   if (tut !== null) { actions.tutskip(); render(); return true; }
   const p = s.pending;

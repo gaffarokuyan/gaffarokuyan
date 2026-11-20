@@ -562,3 +562,9 @@ button:disabled { cursor: not-allowed; }
   .roll:not(:disabled) > .i { animation: wiggle 2.6s ease-in-out infinite; }
   @keyframes wiggle { 0%, 80%, 100% { transform: rotate(-12deg); } 86% { transform: rotate(8deg) scale(1.08); } 92% { transform: rotate(-18deg); } }
 }
+
+/* Dar telefonlar (360 px): üst bilgi etiketleri kesilmesin */
+@media (max-width: 380px) {
+  .res li .i { width: 23px; height: 23px; }
+  .res small { letter-spacing: 0; }
+}

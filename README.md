@@ -1,4 +1,4 @@
-# Kervan
+# Karwan
 
 İpek Yolu'nda geçen sosyal zar-ticaret oyununun oynanabilir prototipi.
 

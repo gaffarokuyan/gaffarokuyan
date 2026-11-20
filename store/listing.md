@@ -4,7 +4,7 @@ Uzunluk sınırları: başlık 30, kısa açıklama 80, tam açıklama 4000 kara
 
 ## Türkçe (varsayılan dil)
 
-**Başlık:** Kervan: İpek Yolu Tüccarları
+**Başlık:** Karwan: İpek Yolu Tüccarları
 
 **Kısa açıklama:** Zar at, ipek ve baharat ticareti yap, kilim doku, kervansarayını büyüt.
 
@@ -34,7 +34,7 @@ Kazancınla kervansarayına kat çık, daha çok yük taşı, pusulara karşı m
 
 ## English
 
-**Title:** Kervan: Silk Road Traders
+**Title:** Karwan: Silk Road Traders
 
 **Short description:** Roll the dice, trade silk and spice, weave rugs and grow your caravanserai.
 

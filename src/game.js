@@ -1,4 +1,4 @@
-// Kervan: oyun kuralları. Arayüzden bağımsızdır; tüm fonksiyonlar durumu (s) yerinde değiştirir.
+// Karwan: oyun kuralları. Arayüzden bağımsızdır; tüm fonksiyonlar durumu (s) yerinde değiştirir.
 import { generate, tap, stars } from './loom.js';
 
 export const GOODS = [

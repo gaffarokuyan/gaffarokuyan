@@ -14,7 +14,7 @@ ${css}</style>
 <div id="app"></div>
 <script>${js}</script>
 `;
-const fragment = `<title>Kervan</title>
+const fragment = `<title>Karwan</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap">
 ${body}`;
@@ -52,7 +52,7 @@ for (const [family, pkg, slug, weight] of FONTS) {
 await writeFile(`${ASSETS}/index.html`, `<!doctype html>
 <html lang="tr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>Kervan</title>
+<title>Karwan</title>
 <style>${faces}
 html,body{margin:0;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;overscroll-behavior:none}
 img,svg{-webkit-user-drag:none}</style>

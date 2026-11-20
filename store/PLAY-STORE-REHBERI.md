@@ -1,4 +1,4 @@
-# Kervan'ı Google Play'e yükleme rehberi
+# Karwan'ı Google Play'e yükleme rehberi
 
 ## Elinizdeki dosyalar
 
@@ -31,7 +31,7 @@ Anahtar ve parola depoya girmez (`.gitignore`). İkisini parola yöneticisine ya
 
 Play Console → Uygulama oluştur:
 
-- Ad: Kervan: İpek Yolu Tüccarları
+- Ad: Karwan: İpek Yolu Tüccarları
 - Varsayılan dil: Türkçe
 - Uygulama mı oyun mu: Oyun
 - Ücretsiz
@@ -68,6 +68,6 @@ Bilgisayarınızda derlemek için: Node.js 22, JDK 17 veya üstü, Android SDK (
 
 ## Bilinmesi gerekenler
 
-- `applicationId` = `com.kervangame.app`. İlk yüklemeden sonra **değiştirilemez**. Başka bir kimlik istiyorsanız (ör. kendi alan adınızla) ilk yüklemeden önce `android/app/build.gradle.kts` içinde değiştirin.
+- `applicationId` = `com.karwangame.app`. İlk yüklemeden sonra **değiştirilemez**. Başka bir kimlik istiyorsanız (ör. kendi alan adınızla) ilk yüklemeden önce `android/app/build.gradle.kts` içinde değiştirin.
 - Oyun dikey ekrana sabit. Android 16 büyük ekranlı cihazlarda (tablet, katlanabilir) bu sabitlemeyi yok sayar; oyun ortalanmış tek sütun olduğu için orada da kullanılabilir kalır.
 - "Gün doğsun (+10 zar)" düğmesi şimdilik sınırsız ve ücretsiz. Bu, prototipteki zamanlayıcının yerini tutuyor.

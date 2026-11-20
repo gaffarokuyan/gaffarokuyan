@@ -14,12 +14,12 @@ val keystoreProps = Properties().apply {
 fun secret(key: String, env: String): String? = keystoreProps.getProperty(key) ?: System.getenv(env)
 
 android {
-    namespace = "com.kervangame.app"
+    namespace = "com.karwangame.app"
     compileSdk = 36
 
     defaultConfig {
         // Mağazaya ilk yüklemeden sonra applicationId bir daha değiştirilemez.
-        applicationId = "com.kervangame.app"
+        applicationId = "com.karwangame.app"
         minSdk = 26
         targetSdk = 36
         versionCode = 1
@@ -28,11 +28,11 @@ android {
 
     signingConfigs {
         create("release") {
-            secret("storeFile", "KERVAN_KEYSTORE")?.let { path ->
+            secret("storeFile", "KARWAN_KEYSTORE")?.let { path ->
                 storeFile = rootProject.file(path)
-                storePassword = secret("storePassword", "KERVAN_KEYSTORE_PASSWORD")
-                keyAlias = secret("keyAlias", "KERVAN_KEY_ALIAS")
-                keyPassword = secret("keyPassword", "KERVAN_KEY_PASSWORD")
+                storePassword = secret("storePassword", "KARWAN_KEYSTORE_PASSWORD")
+                keyAlias = secret("keyAlias", "KARWAN_KEY_ALIAS")
+                keyPassword = secret("keyPassword", "KARWAN_KEY_PASSWORD")
             }
         }
     }

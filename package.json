@@ -1,9 +1,9 @@
 {
-  "name": "kervan",
+  "name": "karwan",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Kervan — İpek Yolu'nda sosyal zar-ticaret oyunu (prototip)",
+  "description": "Karwan — İpek Yolu'nda sosyal zar-ticaret oyunu (prototip)",
   "scripts": {
     "test": "node --test",
     "build": "node build.mjs",

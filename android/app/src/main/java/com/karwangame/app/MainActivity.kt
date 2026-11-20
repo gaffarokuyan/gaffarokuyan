@@ -1,4 +1,4 @@
-package com.kervangame.app
+package com.karwangame.app
 
 import android.annotation.SuppressLint
 import android.content.Intent
@@ -26,7 +26,7 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.webkit.WebViewAssetLoader
 
 /**
- * Kervan'ın Android kabuğu. Oyun, uygulamanın içindeki assets/ klasöründen
+ * Karwan'ın Android kabuğu. Oyun, uygulamanın içindeki assets/ klasöründen
  * internetsiz yüklenir; kayıt WebView'in yerel depolamasında tutulur.
  */
 class MainActivity : ComponentActivity() {
@@ -66,7 +66,7 @@ class MainActivity : ComponentActivity() {
                 displayZoomControls = false
                 textZoom = 100
             }
-            addJavascriptInterface(Bridge(), "KervanNative")
+            addJavascriptInterface(Bridge(), "KarwanNative")
             webViewClient = object : WebViewClient() {
                 override fun shouldInterceptRequest(view: WebView, request: WebResourceRequest): WebResourceResponse? =
                     loader.shouldInterceptRequest(request.url)
@@ -104,7 +104,7 @@ class MainActivity : ComponentActivity() {
         // Geri tuşu önce oyundaki pencereyi kapatır; oyun "işim yok" derse uygulama arka plana geçer.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                webView.evaluateJavascript("window.kervanBack ? window.kervanBack() : false") { handled ->
+                webView.evaluateJavascript("window.karwanBack ? window.karwanBack() : false") { handled ->
                     if (handled != "true") moveTaskToBack(true)
                 }
             }
@@ -128,7 +128,7 @@ class MainActivity : ComponentActivity() {
         super.onDestroy()
     }
 
-    /** Oyunun JavaScript tarafından çağrılır: window.KervanNative.haptic("roll" | "gain" | "tick"). */
+    /** Oyunun JavaScript tarafından çağrılır: window.KarwanNative.haptic("roll" | "gain" | "tick"). */
     inner class Bridge {
         @JavascriptInterface
         fun haptic(kind: String) {
