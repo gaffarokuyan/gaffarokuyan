@@ -10,7 +10,7 @@ const css = await readFile('src/style.css', 'utf8');
 
 const fragment = `<title>Kervan</title>
 <meta name="claude:viewport-fit-sides" content="cover">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700&family=Figtree:wght@400;600;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lilita+One&family=Nunito:wght@600;700;800&display=swap">
 <style>
 ${css}</style>
 <div id="app"></div>
