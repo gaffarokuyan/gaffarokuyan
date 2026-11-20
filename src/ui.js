@@ -58,10 +58,56 @@ function cell(i) {
 }
 
 const PIPS = { 1: [4], 2: [0, 8], 3: [0, 4, 8], 4: [0, 2, 6, 8], 5: [0, 2, 4, 6, 8], 6: [0, 2, 3, 5, 6, 8] };
-function die(face, rolling) {
-  const on = PIPS[face] || [4];
-  return `<div class="die${rolling ? ' rolling' : ''}" aria-label="${face ? `${u.lastRoll}: ${face}` : u.lastRoll}">
-    ${Array.from({ length: 9 }, (_, k) => `<i class="${on.includes(k) ? (face === 1 ? 'on red' : 'on') : ''}"></i>`).join('')}</div>`;
+// Üç boyutlu zar: karşılıklı yüzlerin toplamı 7. ORIENT, istenen yüzü öne getiren küp dönüşü [x, y].
+const FACE_AT = { 1: '', 2: 'rotateY(90deg)', 3: 'rotateX(90deg)', 4: 'rotateX(-90deg)', 5: 'rotateY(-90deg)', 6: 'rotateY(180deg)' };
+const ORIENT = { 1: [0, 0], 2: [0, -90], 3: [-90, 0], 4: [90, 0], 5: [0, 90], 6: [0, 180] };
+let dieTilt = -6; // zar masaya hafif yamuk düşer; açı çizimler arasında korunur
+const cubeTransform = (x, y, z) => `rotateZ(${z}deg) rotateX(${x}deg) rotateY(${y}deg)`;
+
+function die(face) {
+  const shown = face || 6;
+  const [x, y] = ORIENT[shown];
+  const faces = [1, 2, 3, 4, 5, 6].map((f) => `<div class="face" style="transform:${FACE_AT[f]} translateZ(var(--half))">
+      ${Array.from({ length: 9 }, (_, k) => `<i class="${PIPS[f].includes(k) ? (f === 1 ? 'on red' : 'on') : ''}"></i>`).join('')}</div>`).join('');
+  return `<div class="die3d" aria-label="${face ? `${u.lastRoll}: ${face}` : u.lastRoll}">
+    <span class="die-shadow"></span>
+    <div class="die-toss"><div class="cube" style="transform:${cubeTransform(x, y, dieTilt)}">
+      <span class="core cx"></span><span class="core cy"></span><span class="core cz"></span>${faces}
+    </div></div>
+  </div>`;
+}
+
+// Zarı havaya atar, iki eksende yuvarlar, sekerek "face" yüzüne düşürür. Süre: ms.
+const TOSS_MS = 900;
+function tossDie(from, face) {
+  const root = document.querySelector('.die3d');
+  if (!root || !root.animate) return;
+  const cube = root.querySelector('.cube');
+  const [fx, fy] = ORIENT[from || 6];
+  const [tx, ty] = ORIENT[face];
+  const spin = () => (Math.random() < 0.5 ? -1 : 1) * 360 * (1 + Math.floor(Math.random() * 2));
+  const startTilt = dieTilt;
+  dieTilt = Math.round((Math.random() * 2 - 1) * 12);
+  cube.style.transform = cubeTransform(tx, ty, dieTilt);
+  // Tam turlar eklenir: bitiş açısı görsel olarak hedef yüzle aynıdır, arada zar yuvarlanır.
+  cube.animate([
+    { transform: cubeTransform(fx, fy, startTilt) },
+    { transform: cubeTransform(tx + spin(), ty + spin(), dieTilt) },
+  ], { duration: TOSS_MS * 0.86, easing: 'cubic-bezier(.2,.75,.25,1)' });
+  root.querySelector('.die-toss').animate([
+    { transform: 'translateY(0) scale(1)', easing: 'cubic-bezier(.25,.8,.4,1)' },
+    { transform: 'translateY(-58px) scale(1.12)', offset: 0.36, easing: 'cubic-bezier(.6,0,.9,.5)' },
+    { transform: 'translateY(0) scale(1)', offset: 0.7, easing: 'cubic-bezier(.3,.8,.5,1)' },
+    { transform: 'translateY(-10px) scale(1.02)', offset: 0.83, easing: 'cubic-bezier(.5,0,.8,.5)' },
+    { transform: 'translateY(0) scale(1)' },
+  ], { duration: TOSS_MS });
+  root.querySelector('.die-shadow').animate([
+    { transform: 'scale(1)', opacity: 0.55 },
+    { transform: 'scale(0.55)', opacity: 0.25, offset: 0.36 },
+    { transform: 'scale(1.06)', opacity: 0.6, offset: 0.7 },
+    { transform: 'scale(0.9)', opacity: 0.45, offset: 0.83 },
+    { transform: 'scale(1)', opacity: 0.55 },
+  ], { duration: TOSS_MS });
 }
 
 /* ---------- Üst bilgi ---------- */
@@ -105,7 +151,7 @@ function board() {
       <div class="field">
         <span class="medallion" aria-hidden="true"></span>
         <p class="banner"><span>${tileName(pos)}</span></p>
-        ${die(anim ? anim.face : s.lastRoll, anim?.rolling)}
+        ${die(anim ? anim.face : s.lastRoll)}
       </div>
     </div>
   </section>`;
@@ -379,6 +425,7 @@ function showToast(events) {
 function roll() {
   if (anim) return;
   const from = s.pos;
+  const prevFace = s.lastRoll;
   const marker = s.log[0];
   if (!G.roll(s, rng)) return;
   const fresh = [];
@@ -387,15 +434,15 @@ function roll() {
   haptic('roll');
   if (reduceMotion) { showToast(events); return; }
   const steps = s.lastRoll;
-  anim = { pos: from, face: s.lastRoll, rolling: true };
-  let frame = 0;
-  const shuffle = setInterval(() => {
-    anim.face = 1 + Math.floor(Math.random() * 6);
-    render();
-    if (++frame < 8) return;
-    clearInterval(shuffle);
+  // Zar havadayken ekran yeniden çizilmez; animasyon kesintisiz akar.
+  anim = { pos: from, face: prevFace, rolling: true };
+  render();
+  tossDie(prevFace, s.lastRoll);
+  setTimeout(() => haptic('tick'), TOSS_MS * 0.7);
+  setTimeout(() => {
     anim.face = s.lastRoll;
     anim.rolling = false;
+    render();
     let i = 0;
     const hop = () => {
       if (i >= steps) { anim = null; showToast(events); render(); return; }
@@ -404,8 +451,8 @@ function roll() {
       render();
       setTimeout(hop, 170);
     };
-    setTimeout(hop, 220);
-  }, 65);
+    setTimeout(hop, 260);
+  }, TOSS_MS + 40);
 }
 
 const actions = {
@@ -438,6 +485,8 @@ app.addEventListener('click', (e) => {
   actions[act]?.(el.dataset.id);
   if (['buy', 'sell', 'sellall', 'upgrade', 'guard'].includes(act)) floater(el, s.gold - before);
   if (s.gold !== before) haptic(s.gold > before ? 'gain' : 'tick');
+  // Zar atışı kendi çizimini yönetir; burada yeniden çizmek havadaki zarı siler.
+  if (act === 'roll' && anim) return;
   render();
 });
 

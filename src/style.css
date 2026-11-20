@@ -205,15 +205,23 @@ button:disabled { cursor: not-allowed; }
   filter: drop-shadow(0 3px 0 rgb(0 0 0 / 0.3));
 }
 .banner span { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.die {
-  position: relative; z-index: 1; width: 70px; aspect-ratio: 1; border-radius: 16px; padding: 12px;
+.die3d { --size: 72px; --half: 36px; position: relative; z-index: 1; width: var(--size); height: var(--size); perspective: 520px; }
+.die-toss { position: absolute; inset: 0; transform-style: preserve-3d; }
+.cube { position: absolute; inset: 0; transform-style: preserve-3d; }
+.face {
+  position: absolute; inset: 0; border-radius: 15px; padding: 12px; backface-visibility: hidden;
   display: grid; grid-template-columns: repeat(3, 1fr); gap: 4px;
-  background: linear-gradient(145deg, #ffffff, #f1e3c3);
-  box-shadow: inset 0 -4px 0 rgb(0 0 0 / 0.08), 0 6px 0 #c4a874, 0 14px 20px rgb(0 0 0 / 0.45);
+  background: radial-gradient(circle at 30% 22%, #ffffff, #f6ecd6 60%, #e9d6ae);
+  box-shadow: inset 0 0 0 1px rgb(150 110 50 / 0.18), inset 0 -3px 6px rgb(120 80 20 / 0.12);
 }
-.die i { border-radius: 50%; }
-.die i.on { background: radial-gradient(circle at 35% 30%, #4d3a66, #1c1230); }
-.die i.on.red { background: radial-gradient(circle at 35% 30%, #ff7a63, #a8241c); }
+/* Yuvarlak köşelerin arasından içi boş görünmesin diye küpün içini dolduran üç düzlem */
+.core { position: absolute; inset: 3px; border-radius: 6px; background: #e6cf9c; }
+.core.cy { transform: rotateY(90deg); }
+.core.cz { transform: rotateX(90deg); }
+.face i { border-radius: 50%; }
+.face i.on { background: radial-gradient(circle at 35% 30%, #5a4776, #1c1230 70%); box-shadow: inset 0 1px 1px rgb(0 0 0 / 0.5); }
+.face i.on.red { background: radial-gradient(circle at 35% 30%, #ff8a72, #a8241c 70%); }
+.die-shadow { position: absolute; left: 6%; right: 6%; bottom: -14px; height: 18px; border-radius: 50%; background: radial-gradient(ellipse, rgb(0 0 0 / 0.75), transparent 70%); opacity: 0.55; }
 
 /* Önündeki yol */
 .ahead { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 6px; }
@@ -542,8 +550,6 @@ button:disabled { cursor: not-allowed; }
   @keyframes hop { 45% { transform: translateX(-50%) translateY(-9px) rotate(-6deg); } }
   .tile.here { animation: glow 1.6s ease-in-out infinite; }
   @keyframes glow { 50% { box-shadow: 0 0 0 3px #fff3c2, 0 0 0 6px var(--gold), 0 0 30px 10px rgb(242 182 50 / 0.85); } }
-  .die.rolling { animation: tumble 0.26s linear infinite; }
-  @keyframes tumble { 0% { transform: rotate(0) translateY(0); } 25% { transform: rotate(-18deg) translateY(-10px); } 50% { transform: rotate(8deg) translateY(-4px) scale(1.05); } 75% { transform: rotate(16deg) translateY(-12px); } 100% { transform: rotate(0) translateY(0); } }
   .scrim.enter .sheet { animation: rise 0.32s cubic-bezier(.2,1.1,.3,1); }
   @keyframes rise { from { transform: translateY(70px); opacity: 0.3; } }
   .scrim.center .tut { animation: pop 0.35s cubic-bezier(.3,1.4,.5,1); }
